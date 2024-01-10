@@ -1,6 +1,6 @@
 # Developing
 
-This guide helps get up and running to contribute code support to the project.
+This guide helps get up and running to contribute code to the project.
 
 ## Prerequisites
 
@@ -34,8 +34,15 @@ go test ./...
 go build -o _build/ncs ./cmd/main/main.go
 ```
 
-### Build the Docker Image
+### Building the Container
+
+Configuration options can be specified using `--build-args` when building the container. For example, to specify the port that NCS listens on, use the `PORT` build argument.
 
 ```bash
-docker build -t ciroque-nginx/nginx-config-service:latest .
+docker build --build-arg NCS_HTTP_PORT=8080 -t nginx-config-service .
 ```
+
+The available build arguments are:
+- NCS_HTTP_PORT, the port that NCS listens on, defaults to 8293.
+- NCS_LOG_LEVEL, the log level for NCS, defaults to INFO.
+- NCS_HTTP_HOST, the host that NCS listens on, defaults to 0.0.0.0.

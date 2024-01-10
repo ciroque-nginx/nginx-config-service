@@ -5,7 +5,7 @@
 
 # NGINX Config Service
 
-The NGINX Config Service, or NCS, is a service that provides a RESTful API for managing NGINX configuration files. The NCS is a microservice that is intended to be deployed as a sidecar to an NGINX instance. The NCS is written in Go and is designed to be deployed as a container.
+The NGINX Config Service, or NCS, is a service that provides a RESTful API for managing NGINX configuration files. NCS is a microservice that is intended to be deployed as a sidecar to an NGINX instance.
 
 ## Table of Contents
 
@@ -36,6 +36,7 @@ This project aims to simplify the management of NGINX configuration, specificall
 - Provide monitoring or metrics from NGINX instance.
 - Provide fleet management of NGINX instances.
 - Provide a GUI for managing NGINX configuration files.
+- Reproduce the configuration validation of NGINX.
 
 ## Requirements
 
@@ -50,7 +51,7 @@ It depends. What are your goals?
 
 ## How to Use
 
-The easiest way to use NCS is to run it as a container. The following example shows how to run NCS as a container using Docker.
+The easiest way to use NCS is to run it as a container. The following example shows how to run NCS as a container using Docker:
 
 ```bash
 docker run -dit --name nginx-config-service -p 8293:8293 ghcr.io/ciroque/nginx-config-service:latest
@@ -59,6 +60,10 @@ docker run -dit --name nginx-config-service -p 8293:8293 ghcr.io/ciroque/nginx-c
 Note that using `latest` is not recommended for production use. Instead, use a specific version tag, such as `v0.1.0`.
 
 The project provides [releases](https://github.com/ciroque-nginx/nginx-config-service/releases) to help find a specific version.
+
+### Sending Requests (Updating Configuration)
+
+_Forthcoming_
 
 ## Contributing
 
@@ -69,4 +74,3 @@ Also, see the [developer guide](https://github.com/ciroque-nginx/nginx-config-se
 ## License
 
 [Apache License, Version 2.0](https://github.com/ciroque-nginx/nginx-config-service/blob/main/LICENSE)
-
