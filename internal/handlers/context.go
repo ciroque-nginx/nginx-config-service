@@ -1,0 +1,23 @@
+/*
+ * Copyright Steve Wagner. All rights reserved.
+ * Use of this source code is governed by the Apache License that can be found in the LICENSE file.
+ */
+
+package handlers
+
+import (
+	"ciroque/go-http-server/internal/processing"
+	"github.com/sirupsen/logrus"
+)
+
+type Context struct {
+	Logger    *logrus.Entry
+	Processor *processing.ConfigUpdateProcessor
+}
+
+func NewContext(logger *logrus.Entry, processor *processing.ConfigUpdateProcessor) *Context {
+	return &Context{
+		Logger:    logger,
+		Processor: processor,
+	}
+}

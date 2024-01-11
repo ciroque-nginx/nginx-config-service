@@ -46,7 +46,10 @@ func (server *Server) Run(stopCh <-chan struct{}) {
 		if err != nil {
 			server.Logger.Fatalf("Error building handler %#v", err)
 		}
+
 		mux.Handle(route.Route(), handler)
+
+		defer route.Cleanup()
 	}
 
 	address := fmt.Sprintf("%s:%s", server.Settings.Host, server.Settings.Port)

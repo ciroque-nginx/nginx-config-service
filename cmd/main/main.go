@@ -9,6 +9,9 @@ import (
 	"ciroque/go-http-server/internal/config"
 	"ciroque/go-http-server/internal/handlers"
 	httpserver "ciroque/go-http-server/internal/http-server"
+	configFile "ciroque/go-http-server/internal/nginx/file"
+	"ciroque/go-http-server/internal/processing"
+	"context"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
@@ -16,6 +19,11 @@ import (
 )
 
 func main() {
+	abortChannel := make(chan string)
+	context, cancel := context.WithCancel(context.Background())
+
+	defer close(abortChannel)
+
 	settings, err := config.NewSettings()
 	if err != nil {
 		logrus.Fatalf("Error creating configuration settings: %v", err)
@@ -25,14 +33,24 @@ func main() {
 	logger.SetLevel(settings.LogLevel)
 	loggerEntry := logrus.NewEntry(logger)
 
-	abortChannel := make(chan string)
-	defer close(abortChannel)
+	updateChannel := make(chan *processing.ConfigUpdateEvent, settings.UpdateChannelSize)
+
+	updaterContext := configFile.NewManagerContext(context, loggerEntry, updateChannel)
+
+	configUpdateProcessor := processing.NewConfigUpdateProcessor(updateChannel)
+	configUpdater := configFile.NewConfigFileManager(settings, updaterContext)
+
+	go configUpdater.Start()
+
+	handlerContext := handlers.NewContext(loggerEntry, configUpdateProcessor)
+
+	routes := handlers.GetRoutes(handlerContext)
 
 	httpServer, err := httpserver.NewServer(
 		settings,
 		abortChannel,
 		loggerEntry,
-		handlers.GetRoutes(loggerEntry))
+		routes)
 	if err != nil {
 		logger.Fatalf("Error creating http server: %v", err)
 	}
@@ -51,6 +69,7 @@ func main() {
 	case <-sigTerm:
 		{
 			close(stopCh)
+			cancel()
 			logger.Info("Exiting per SIGTERM")
 		}
 	case err := <-abortChannel:

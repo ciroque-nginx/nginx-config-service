@@ -5,10 +5,10 @@
 
 package responses
 
-type RootPathResponse struct {
+type JsonBodyResponse struct {
 	Body string `json:"text"`
 }
 
-func NewRootPathResponse(body string) RootPathResponse {
-	return RootPathResponse{Body: body}
+func NewJsonBodyResponse(json string) JsonBodyResponse {
+	return JsonBodyResponse{Body: json}
 }

@@ -11,6 +11,7 @@ import (
 )
 
 const (
+	DefaultUpdateChannelSize    = 100
 	DefaultHost                 = "0.0.0.0"
 	DefaultPort                 = "8293"
 	DefaultLogLevel             = logrus.InfoLevel
@@ -20,9 +21,10 @@ const (
 )
 
 type Settings struct {
-	Host     string
-	Port     string
-	LogLevel logrus.Level
+	UpdateChannelSize int
+	Host              string
+	Port              string
+	LogLevel          logrus.Level
 }
 
 func NewSettings() (*Settings, error) {
@@ -38,7 +40,7 @@ func NewSettings() (*Settings, error) {
 
 	logLevel := getLogLevel()
 
-	config := &Settings{host, port, logLevel}
+	config := &Settings{DefaultUpdateChannelSize, host, port, logLevel}
 
 	return config, nil
 }
