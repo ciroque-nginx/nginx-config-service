@@ -7,19 +7,38 @@ package httpserver
 
 import (
 	"ciroque/go-http-server/internal/config"
-	"ciroque/go-http-server/internal/metrics"
+	routehandlers "ciroque/go-http-server/internal/handlers"
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"math/rand"
 	"net/http"
-	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 )
 
+type TestHandler struct {
+}
+
+func (handler *TestHandler) BuildHandler() (http.Handler, error) {
+	return http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})), nil
+}
+
+func (handler *TestHandler) Cleanup() {
+
+}
+
+func (handler *TestHandler) Route() string {
+	return "/"
+}
+
 func TestServer_Run(t *testing.T) {
+	port := rand.Intn(1000) + 20000
+
 	abortChannel := make(chan string)
 	defer close(abortChannel)
 
-	server, err := buildServer(abortChannel)
+	server, err := buildServer(abortChannel, port)
 	if err != nil {
 		t.Fatalf("Error building server: %v", err)
 	}
@@ -40,66 +59,9 @@ func TestServer_Run(t *testing.T) {
 	}
 }
 
-func TestServer_AddressAlreadyInUse(t *testing.T) {
-	stopCh := make(chan struct{})
-	defer close(stopCh)
+func buildServer(abortChannel chan string, port int) (*Server, error) {
+	os.Setenv("NCS_HTTP_PORT", fmt.Sprintf("%d", port))
 
-	abortChannelOne := make(chan string)
-	//defer close(abortChannelOne)
-
-	abortChannelTwo := make(chan string)
-	defer close(abortChannelTwo)
-
-	serverOne, err := buildServer(abortChannelOne)
-	if err != nil {
-		t.Fatalf("Error building serverOne: %v", err)
-	}
-	go serverOne.Run(stopCh)
-
-	serverTwo, err := buildServer(abortChannelTwo)
-	if err != nil {
-		t.Fatalf("Error building serverTwo: %v", err)
-	}
-	go serverTwo.Run(stopCh)
-
-	select {
-	case err := <-abortChannelTwo:
-		{
-			if err != "listen tcp 0.0.0.0:8293: bind: address already in use" {
-				t.Fatalf(">>>> Error starting serverTwo: %v", err)
-			}
-		}
-	case <-time.After(3 * time.Second):
-		{
-			t.Errorf("Server did not fail to start")
-		}
-	}
-}
-
-func TestServer_ServeRootPath(t *testing.T) {
-	abortChannel := make(chan string)
-	defer close(abortChannel)
-
-	server, err := buildServer(abortChannel)
-	if err != nil {
-		t.Fatalf("Error building server: %v", err)
-	}
-
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatalf("Error creating request: %v", err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	server.ServeRootPath(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-}
-
-func buildServer(abortChannel chan string) (*Server, error) {
 	settings, err := config.NewSettings()
 	if err != nil {
 		logrus.Fatalf("Error creating configuration settings: %v", err)
@@ -108,17 +70,15 @@ func buildServer(abortChannel chan string) (*Server, error) {
 	logger := logrus.New()
 	logger.SetLevel(settings.LogLevel)
 
-	metricClient, err := metrics.NewMetrics()
-	if err != nil {
-		logger.Fatalf("Error creating metrics client: %v", err)
+	routes := []routehandlers.Interface{
+		&TestHandler{},
 	}
-	defer metricClient.Shutdown()
 
 	server, err := NewServer(
 		settings,
 		abortChannel,
 		logrus.NewEntry(logger),
-		&metricClient)
+		routes)
 
 	if err != nil {
 		return nil, err

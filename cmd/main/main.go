@@ -7,8 +7,8 @@ package main
 
 import (
 	"ciroque/go-http-server/internal/config"
+	"ciroque/go-http-server/internal/handlers"
 	httpserver "ciroque/go-http-server/internal/http-server"
-	"ciroque/go-http-server/internal/metrics"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
@@ -23,17 +23,16 @@ func main() {
 
 	logger := logrus.New()
 	logger.SetLevel(settings.LogLevel)
-
-	metricClient, err := metrics.NewMetrics()
-	if err != nil {
-		logger.Fatalf("Error creating metrics client: %v", err)
-	}
-	defer metricClient.Shutdown()
+	loggerEntry := logrus.NewEntry(logger)
 
 	abortChannel := make(chan string)
 	defer close(abortChannel)
 
-	httpServer, err := httpserver.NewServer(settings, abortChannel, logrus.NewEntry(logger), &metricClient)
+	httpServer, err := httpserver.NewServer(
+		settings,
+		abortChannel,
+		loggerEntry,
+		handlers.GetRoutes(loggerEntry))
 	if err != nil {
 		logger.Fatalf("Error creating http server: %v", err)
 	}
