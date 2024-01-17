@@ -16,3 +16,4 @@ Thumbs.db
 *.log
 
 _build/
+cover.*

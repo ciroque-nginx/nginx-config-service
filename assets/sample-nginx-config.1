@@ -1,0 +1,35 @@
+http {
+    # Define the upstream servers for backend1
+    upstream backend1 {
+        server backend1-server1.example.com;
+        server backend1-server2.example.com;
+        # Additional load balancing configuration (if needed) goes here
+    }
+
+    # Define the upstream servers for backend2
+    upstream backend2 {
+        server backend2-server1.example.com;
+        server backend2-server2.example.com;
+        # Additional load balancing configuration (if needed) goes here
+    }
+
+    server {
+        listen 80;
+
+        # Example location block for backend1
+        location /backend1/ {
+            proxy_pass http://backend1;
+            # Additional reverse proxy configuration (if needed) goes here
+        }
+
+        # Example location block for backend2
+        location /backend2/ {
+            proxy_pass http://backend2;
+            # Additional reverse proxy configuration (if needed) goes here
+        }
+
+        # Other server configuration (like error pages) goes here
+    }
+}
+
+# Additional global NGINX configuration (like events) goes here
