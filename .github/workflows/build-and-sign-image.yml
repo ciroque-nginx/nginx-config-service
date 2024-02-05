@@ -96,7 +96,7 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: cosign sign "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.docker-build-and-push.outputs.digest }}"
 
-      - uses: anchore/sbom-action@c7f031d9249a826a082ea14c79d3b686a51d485a # v0.100.0
+      - uses: anchore/sbom-action@b6a39da80722a2cb0ef5d197531764a89b5d48c3 # v0.100.0
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           output-file: ./nginx-config-service-${{env.GITHUB_REF_NAME}}.spdx.json
